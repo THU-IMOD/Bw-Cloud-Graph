@@ -1,0 +1,99 @@
+storage: # storage_config_t
+  engine: legacy # multiscale requires a fresh store; workers >0 enable SMO; compression unsupported
+  full_giant_warmup: true # Multiscale: charge retained giant fragments to the six budgets
+  csr_prefix: ./workspace/example/csr
+  delta_prefix: ./workspace/example/delta
+  meta_prefix: ./workspace/example/meta
+  base_page_size: 1024 * 16
+  delta_page_size: 1024 * 4
+  index_page_size: 1024 * 16
+  default_page_no: 0
+  have_level: false
+  max_block_neighbor: 4
+  max_delta_chain_length: 2
+  rebuild: false
+  edge_slot_count: 0
+  id_aware: false
+
+buffer:  # buffer_config_t
+  chunk_count: 16
+  chunk_size: 16
+  db_io_size: 16
+  load_buffer_size: 1024 * 1024 * 64
+  csr_flush_interval_ms: 500
+  # csr_flush_workers: TBB worker thread count for CSR flusher.
+  #   > 0: enable async CSR-page flushing with the given thread budget.
+  #   = 0: disable CSR-page flushing entirely.
+  csr_flush_workers: 1
+
+
+delta_buffer:  # delta_page buffer pool
+  chunk_count: 16
+  chunk_size: 1024
+  flush_interval_ms: 200
+  # flush_workers: TBB worker thread count for delta flusher.
+  #   > 0: enable async delta-page flushing with the given thread budget.
+  #   = 0: disable delta-page flushing entirely.
+  flush_workers: 1
+partition: # partition_config_t
+  layout: kaminpar-gorder # louvain-gorder | kaminpar-gorder | id-based; overrides id_aware
+  giant_degree_bound: 1024
+  max_block_weight: 2000
+  coarsening_weight: 1024 * 32
+  redo: false
+  native: false
+
+algorithms:
+  edge_insert_rate: 1000
+  edge_insert_mode: 0
+  bfs:
+    max_iteration: 100
+    start_vertex: 0
+    is_random: true
+    random_select: 10
+    algo: map         # scan | map | sequential
+  wcc:
+    max_iteration: 100
+    algo: sv          # sv | scan | map | sequential
+  pagerank:
+    max_iteration: 5
+    damping_factor: 0.85
+    convergence_threshold: 1e-2
+    algo: map         # scan | map | sequential
+  cdlp:
+    max_iteration: 5
+    algo: scan         # scan | map | sequential
+    variant: original # original | voting  (only when algo: map)
+  sample:
+    vertex_count: 500
+    distribution_steps: 10
+
+thread:
+  # consolidation_workers: number of background SMO worker threads.
+  #   > 0: enable async consolidation with the given thread budget.
+  #   = 0: disable consolidation; delta chains are never consolidated.
+  consolidation_workers: 1
+  # version_gc_thd_count: background workers that retire old vertex-index
+  # versions through Folly hazard pointers. Must be at least 1.
+  version_gc_thd_count: 1
+
+graph:
+  name: example
+
+logging:
+  log_file: ""
+
+# Used by the multiscale engine/pool; legacy budgets above remain separate.
+# Native graph mode keeps Index images resident outside these frame budgets.
+# chunk_size is pages per chunk, not bytes. chunk_count: 0 disables a group.
+multiscale_buffer:
+  csr_4k:   {chunk_count: 2, chunk_size: 1024}
+  csr_32k:  {chunk_count: 2, chunk_size: 128}
+  csr_256k: {chunk_count: 2, chunk_size: 16}
+  csr_2m:   {chunk_count: 2, chunk_size: 2}
+  index:    {chunk_count: 1, chunk_size: 256}
+  delta:    {chunk_count: 2, chunk_size: 1024}
+
+# Runtime MVVI backend; captured when each database/index is constructed.
+index:
+  vertex_index: array  # array or art

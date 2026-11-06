@@ -1,0 +1,6 @@
+[submodule "third_party/art-vertex-index"]
+	path = third_party/art-vertex-index
+	url = git@gitee.com:wangsy_thu/art-vertex-index.git
+[submodule "third_party/louvain-communities-openmp"]
+	path = third_party/louvain-communities-openmp
+	url = git@gitee.com:wangsy_thu/louvain-communities-openmp.git
