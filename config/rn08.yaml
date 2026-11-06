@@ -1,0 +1,68 @@
+storage: # storage_config_t
+  csr_prefix: ./workspace
+  delta_prefix: ./workspace
+  meta_prefix: ./workspace
+  base_page_size: 1024 * 64
+  delta_page_size: 1024 * 4
+  index_page_size: 1024 * 64
+  default_page_no: 0
+  have_level: false
+  max_block_neighbor: 4
+  max_delta_chain_length: 2
+  rebuild: false
+  edge_slot_count: 1
+  id_aware: true
+
+buffer:  # buffer_config_t
+  chunk_count: 16
+  chunk_size: 256
+  db_io_size: 4
+  load_buffer_size: 1024 * 1024 * 64
+  csr_flush_interval_ms: 500
+
+
+delta_buffer:  # delta_page buffer pool
+  chunk_count: 16
+  chunk_size: 1024
+  flush_interval_ms: 200
+partition: # partition_config_t
+  giant_degree_bound: 1024
+  max_block_weight: 1024
+  coarsening_weight: 4096
+  redo: false
+  native: false
+
+algorithms:
+  edge_insert_rate: 100000
+  edge_insert_mode: 2
+  bfs:
+    max_iteration: 100
+    start_vertex: 0
+    is_random: false
+    random_select: 100
+    algo: map         # scan | map | sequential
+  wcc:
+    max_iteration: 100
+    algo: sv          # sv | scan | map | sequential
+  pagerank:
+    max_iteration: 20
+    damping_factor: 0.85
+    convergence_threshold: 1e-2
+    algo: map         # scan | map | sequential
+  cdlp:
+    max_iteration: 20
+    algo: map         # scan | map | sequential
+    variant: original # original | voting  (only when algo: map)
+  sample:
+    vertex_count: 500
+    distribution_steps: 10
+
+thread:
+  consolidation_workers: 4
+  version_gc_thd_count: 2
+
+graph:
+  name: rn_0.8
+
+logging:
+  log_file: ""

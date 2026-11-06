@@ -1,0 +1,86 @@
+storage: # storage_config_t
+  engine: legacy # multiscale requires a fresh store; workers >0 enable SMO; compression unsupported
+  full_giant_warmup: true # Multiscale: charge retained giant fragments to the six budgets
+  csr_prefix: ./workspace
+  delta_prefix: ./workspace
+  meta_prefix: ./workspace
+  base_page_size: 1024 * 64
+  delta_page_size: 1024 * 4
+  index_page_size: 1024 * 16
+  default_page_no: 0
+  have_level: true
+  max_block_neighbor: 16
+  max_delta_chain_length: 2
+  rebuild: false
+  edge_slot_count: 0
+  id_aware: false
+
+buffer:  # buffer_config_t
+  chunk_count: 16
+  chunk_size: 1024
+  db_io_size: 4
+  load_buffer_size: 1024 * 1024 * 64
+  csr_flush_interval_ms: 500
+
+
+delta_buffer:  # delta_page buffer pool
+  chunk_count: 16
+  chunk_size: 1024
+  flush_interval_ms: 200
+partition: # partition_config_t
+  layout: kaminpar-gorder # louvain-gorder | kaminpar-gorder | id-based; overrides id_aware
+  giant_degree_bound: 1024
+  max_block_weight: 1024
+  coarsening_weight: 512 * 20
+  redo: false
+  native: false
+
+algorithms:
+  edge_insert_rate: 100000
+  edge_insert_mode: 0
+  bfs:
+    max_iteration: 100
+    start_vertex: 0
+    is_random: false
+    random_select: 100
+    algo: map         # scan | map | sequential
+  wcc:
+    max_iteration: 100
+    algo: sv          # sv | scan | map | sequential
+  pagerank:
+    max_iteration: 20
+    damping_factor: 0.85
+    convergence_threshold: 1e-2
+    algo: map         # scan | map | sequential
+  cdlp:
+    max_iteration: 20
+    algo: map         # scan | map | sequential
+    variant: original # original | voting  (only when algo: map)
+  sample:
+    vertex_count: 500
+    distribution_steps: 10
+
+thread:
+  consolidation_workers: 4
+  version_gc_thd_count: 2
+
+graph:
+  name: rn
+
+logging:
+  log_file: ""
+
+# Used by the multiscale engine/pool; legacy budgets above remain separate.
+# Native graph mode keeps Index images resident outside these frame budgets.
+# chunk_size is pages per chunk, not bytes. chunk_count: 0 disables a group.
+multiscale_buffer:
+  csr_4k:   {chunk_count: 2, chunk_size: 1024}
+  csr_32k:  {chunk_count: 2, chunk_size: 128}
+  csr_256k: {chunk_count: 2, chunk_size: 16}
+  csr_2m:   {chunk_count: 2, chunk_size: 2}
+  index:    {chunk_count: 1, chunk_size: 256}
+  delta:    {chunk_count: 2, chunk_size: 1024}
+
+# Runtime MVVI backend; captured when each database/index is constructed.
+index:
+  vertex_index: array  # array or art
